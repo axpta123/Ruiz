@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار جافاسكريبت الحديثة - التفاعلي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+        body { font-family: 'Cairo', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-900 via-indigo-900 to-slate-900 min-h-screen text-white flex items-center justify-center p-4">
+
+    <div class="max-w-xl w-full bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 shadow-2xl border border-white/20">
+        
+        <!-- Header -->
+        <div class="text-center mb-6">
+            <h1 class="text-2xl md:text-3xl font-bold text-cyan-400 mb-2">اختبار جافاسكريبت الحديثة (Modern JS)</h1>
+            <p class="text-gray-300 text-sm">اختبر معلوماتك في مفاهيم ES6 والمصفوفات</p>
+        </div>
+
+        <!-- Quiz Box -->
+        <div id="quiz-container">
+            <div class="flex justify-between items-center mb-4 text-sm text-cyan-300 font-semibold">
+                <span id="question-counter">السؤال 1 من 5</span>
+                <span id="score-display">النتيجة: 0</span>
+            </div>
+
+            <div id="question-box" class="bg-white/5 rounded-xl p-5 mb-6 border border-white/10">
+                <h2 id="question-text" class="text-lg md:text-xl font-semibold leading-relaxed">جاري تحميل السؤال...</h2>
+            </div>
+
+            <div id="options-container" class="space-y-3">
+                <!-- Options will be injected here -->
+            </div>
+
+            <button id="next-btn" onclick="nextQuestion()" class="mt-6 w-full bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 px-6 rounded-xl transition-all hidden shadow-lg">
+                السؤال التالي
+            </button>
+        </div>
+
+        <!-- Result Box -->
+        <div id="result-container" class="hidden text-center py-8">
+            <h2 class="text-3xl font-bold mb-4 text-cyan-400">انتهى الاختبار! 🎉</h2>
+            <p id="final-score-text" class="text-xl mb-6 text-gray-200">لقد أجبت بشكل صحيح على 0 من 5</p>
+            <button onclick="restartQuiz()" class="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold py-3 px-8 rounded-xl transition-all shadow-lg">
+                إعادة الاختبار
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "ما هو الرمز المستخدم في جافاسكريبت الحديثة لفك عناصر المصفوفة أو تجميع الوسائط؟",
+                options: ["...", "###", "///", "+++" ],
+                correct: 0,
+                rationale: "النقاط الثلاث (...) تُستخدم كعامل انتشار (Spread) أو تجميع (Rest)."
+            },
+            {
+                question: "ما هي الطريقة الأنسب لتجنب أخطاء القيم المفقودة في المعاملات عند استدعاء الدالة؟",
+                options: ["تحديد القيم الافتراضية للمعاملات (Default Parameters)", "استخدام الدالة التكرارية forEach", "استخدام الكلمة المفتاحية var", "إلغاء المعاملات بالكامل"],
+                correct: 0,
+                rationale: "القيم الافتراضية للمعاملات تحمي من الأخطاء عند عدم إرسال قيمة."
+            },
+            {
+                question: "أي من طرق المصفوفات التالية تُعد أساسية ومهمة جداً لعرض القوائم (Lists) في مكتبة ريأكت (React)؟",
+                options: [".map()", ".forEach()", ".length()", ".push()"],
+                correct: 0,
+                rationale: "طريقة .map() تقوم بتحويل العناصر وإرجاع مصفوفة جديدة، مما يجعلها مثالية لعرض القوائم في ريأكت."
+            },
+            {
+                question: "صح أو خطأ: الدالة .forEach() تُرجع مصفوفة جديدة معدلة بعد تنفيذ الأوامر.",
+                options: ["خطأ (تعيد undefined ولا تنشئ مصفوفة جديدة)", "صحيح تماماً"],
+                correct: 0,
+                rationale: "طريقة .forEach() تُستخدم فقط لتنفيذ تأثيرات جانبية وتُرجع دائماً undefined."
+            },
+            {
+                question: "ما ميزة اختصار خصائص الكائنات (Object Property Shorthand)؟",
+                options: ["تسمح بكتابة const user = { name, age } مباشرة عندما يتطابق اسم المتغير مع اسم الخاصية", "تمنع تكرار أسماء الدوال داخل الكائن فقط", "تستخدم لتحويل المصفوفات إلى نصوص", "تدمج الكائنات معاً تلقائياً"],
+                correct: 0,
+                rationale: "يسمح الاختصار بتجنب تكرار الأسماء إذا كان اسم المتغير يطابق اسم الخاصية."
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        function loadQuestion() {
+            answered = false;
+            const q = questions[currentQuestionIndex];
+            document.getElementById('question-counter').innerText = `السؤال ${currentQuestionIndex + 1} من ${questions.length}`;
+            document.getElementById('question-text').innerText = q.question;
+            document.getElementById('score-display').innerText = `النتيجة: ${score}`;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-right p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-medium text-gray-100 flex justify-between items-center";
+                btn.innerHTML = `<span>${opt}</span>`;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function selectOption(selectedIndex, btnElement) {
+            if (answered) return;
+            answered = true;
+
+            const q = questions[currentQuestionIndex];
+            const optionsButtons = document.getElementById('options-container').children;
+
+            if (selectedIndex === q.correct) {
+                btnElement.classList.remove('bg-white/5', 'hover:bg-white/10');
+                btnElement.classList.add('bg-emerald-600/80', 'border-emerald-400');
+                score++;
+            } else {
+                btnElement.classList.remove('bg-white/5', 'hover:bg-white/10');
+                btnElement.classList.add('bg-rose-600/80', 'border-rose-400');
+                optionsButtons[q.correct].classList.remove('bg-white/5', 'hover:bg-white/10');
+                optionsButtons[q.correct].classList.add('bg-emerald-600/80', 'border-emerald-400');
+            }
+
+            document.getElementById('score-display').innerText = `النتيجة: ${score}`;
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('result-container').classList.remove('hidden');
+            document.getElementById('final-score-text').innerText = `لقد أجبت بشكل صحيح على ${score} من ${questions.length}`;
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            document.getElementById('result-container').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
